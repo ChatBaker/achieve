@@ -1,0 +1,20 @@
+<div class="container">
+  <div class="col-md-6 col-md-offset-3 col-sm-10 col-sm-offset-1">
+   <h3>以下の内容で、送信する。</h3>
+
+   <%= form_for(@contact, url: contacts_path) do |f| %>
+     <%= f.hidden_field :name %>
+     <%= f.hidden_field :email%>
+     <%= f.hidden_field :content %>
+     <p>name:<%= @contact.name %></p>
+     <br>
+     <p>email:<%= @contact.email %></p>
+     <br>
+     <p>content:<%= @contact.content %></p>
+     <br>
+     <%= f.submit "送る",class: 'btn btn-primary btn-block' %>
+     <br>
+     <%= f.submit "戻る", name: 'back',class: 'btn btn-primary btn-block' %>
+   <% end %>
+  </div>
+</div>

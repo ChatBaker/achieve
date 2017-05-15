@@ -1,0 +1,2 @@
+module Contacts　indexHelper
+end
