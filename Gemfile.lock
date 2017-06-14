@@ -68,6 +68,8 @@ GEM
       warden (~> 1.2.3)
     erubis (2.7.0)
     execjs (2.7.0)
+    faker (1.7.3)
+      i18n (~> 0.5)
     font-awesome-rails (4.7.0.2)
       railties (>= 3.2, < 5.2)
     globalid (0.4.0)
@@ -243,6 +245,7 @@ DEPENDENCIES
   cancan
   coffee-rails (~> 4.1.0)
   devise
+  faker
   jbuilder (~> 2.0)
   jquery-rails
   letter_opener_web
@@ -260,4 +263,4 @@ DEPENDENCIES
   web-console (~> 2.0)
 
 BUNDLED WITH
-   1.15.0
+   1.15.1
