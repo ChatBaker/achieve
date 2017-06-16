@@ -1,5 +1,5 @@
 Rails.application.configure do
-  config.action_mailer.default_url_options = { host: 'peaceful-dawn-79513.herokuapp.com' }
+  config.action_mailer.default_url_options = { host: 'aqueous-journey-52227.herokuapp.com' }
   ActionMailer::Base.delivery_method = :smtp
 ActionMailer::Base.smtp_settings =
 {
