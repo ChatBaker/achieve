@@ -4,4 +4,3 @@
     super
   end
 end
-end
