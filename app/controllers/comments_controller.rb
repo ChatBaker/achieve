@@ -10,6 +10,9 @@ class CommentsController < ApplicationController
          format.html { redirect_to blog_path(@blog), notice: 'コメントを投稿しました。' }
          # JS形式でレスポンスを返します。
          format.js { render :index }
+         Pusher.trigger('test_channel', 'comment_created', {
+            message: 'あなたの作成したブログにコメントが付きました'
+          })
        else
          format.html { render :new }
        end
@@ -32,9 +35,6 @@ class CommentsController < ApplicationController
     @comment.update(comment_params)
      if @comment.save
        redirect_to blog_path(@blog), notice: "コメントを編集しました！"
-       Pusher.trigger('test_channel', 'comment_created', {
-          message: 'あなたの作成したブログにコメントが付きました'
-        })
      else
          render 'edit'
       end
