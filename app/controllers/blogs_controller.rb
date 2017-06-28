@@ -1,8 +1,17 @@
 class BlogsController < ApplicationController
    before_action :authenticate_user!
-   before_action :set_blog, only: [:edit, :update, :destroy]
+   before_action :set_blog, only: [:show, :edit, :update, :destroy]
   def index
      @blogs = Blog.all
+     respond_to do |format|
+    format.html
+    format.js
+    end
+  end
+
+  def show
+    @comment = @blog.comments.build
+    @comments = @blog.comments
   end
 
   def new
@@ -61,4 +70,4 @@ class BlogsController < ApplicationController
     def set_blog
       @blog = Blog.find(params[:id])
     end
-end
+  end
