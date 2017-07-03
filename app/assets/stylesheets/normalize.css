@@ -211,8 +211,6 @@ audio:not([controls]) {
 
 img {
   border-style: none;
-  max-width: 50px;
-  max-height: 50px;
 }
 
 /**
