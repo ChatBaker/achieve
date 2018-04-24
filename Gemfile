@@ -5,8 +5,6 @@ source 'https://rubygems.org'
 group :development, :test do
   gem 'byebug'
   gem 'spring'
-  gem 'pry-rails'
-  gem 'better_errors'
   gem 'capistrano', '3.6.0'
   gem 'capistrano-bundler'
   gem 'capistrano-rails'
@@ -39,6 +37,17 @@ gem 'rails_admin'
 gem 'cancan'
 gem 'faker'
 gem 'activeresource'
+
+
+group :development do
+ gem 'letter_opener_web'
+ gem 'dotenv-rails'
+ gem 'web-console', '~> 2.0'
+ gem 'pry-rails'
+ gem 'better_errors'
+ gem 'binding_of_caller'
+end
+
 gem 'omniauth'
 gem 'omniauth-twitter'
 gem 'omniauth-facebook'
