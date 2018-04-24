@@ -73,15 +73,6 @@ ActiveRecord::Schema.define(version: 20170628092757) do
   add_index "notifications", ["comment_id"], name: "index_notifications_on_comment_id", using: :btree
   add_index "notifications", ["user_id"], name: "index_notifications_on_user_id", using: :btree
 
-  create_table "orders", force: :cascade do |t|
-    t.string   "products"
-    t.string   "name"
-    t.string   "color"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer  "user_id"
-  end
-
   create_table "relationships", force: :cascade do |t|
     t.integer  "follower_id"
     t.integer  "followed_id"

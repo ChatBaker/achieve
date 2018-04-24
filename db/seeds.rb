@@ -14,16 +14,16 @@
  User.create!(email: email,
               name: name,
               password: password,
-               password_confirmation: password,
+              password_confirmation: password,
                )
 end
 
-n = 1
-while n <= 100
-  Blog.create!(
-    title: "あああ",
-    content: "hoge",
-    user_id: n
-  )
-  n = n + 1
-end
+# n = 1
+# while n <= 100
+#   Blog.create!(
+#     title: "あああ",
+#     content: "hoge",
+#     user_id: n
+#   )
+#   n = n + 1
+# end
