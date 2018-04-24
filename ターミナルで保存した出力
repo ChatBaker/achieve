@@ -1,0 +1,2208 @@
+Last login: Wed Jan 31 18:24:36 on ttys000
+peachkichinoMacBook-Pro:saba peachkichi$ rails s
+=> Booting Puma
+=> Rails 5.1.4 application starting in development 
+=> Run `rails server -h` for more startup options
+Puma starting in single mode...
+* Version 3.11.2 (ruby 2.4.1-p111), codename: Love Song
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://0.0.0.0:3000
+Use Ctrl-C to stop
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:19:25 +0900
+   (0.5ms)  SELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (34.8ms)
+Completed 200 OK in 335ms (Views: 297.1ms | ActiveRecord: 0.7ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 02:19:36 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"t18Ev5rbL8hpFk3FP8hkEV0+8T7cFUCwXFgOeSLvtECeLBqH4DX4FaXfRZH1aH4nxvQ37sbGycqpgbVMRjm1+w==", "field"=>{"name"=>"null", "prefecture"=>"1", "region"=>"2", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"17", "opened_at(5i)"=>"19", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"17", "cal(5i)"=>"19", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+
+From: /Users/peachkichi/works/saba/app/controllers/fields_controller.rb @ line 29 FieldsController#create:
+
+    23: def create
+    24: 
+    25:   firestore = Google::Cloud::Firestore.new(project_id: "test-saba",credentials:"test-saba-firebase-adminsdk-3rxh5-d376eee199.json")
+    26:   @field = Field.new(field_params)
+    27:   # 以下フィールドIDは自動IDとなる＆フィールド一覧画面情報
+    28:   fields_col = firestore.col "fields/#{@field.region}/#{@field.prefecture}"
+ => 29:   binding.pry
+    30:   random_ref = fields_col.add({ field_id: @field.field_id,name: @field.name,prefecture: @field.prefecture,region: @field.region,
+    31:   features: @field.features.split(",").map!{|x| x.to_i},types: @field.types.split(",").map!{|x| x.to_i},created_at: firestore.field_server_time})
+    32:   # 以下、画像を保存する
+    33:   require "google/cloud/storage"
+    34:   storage = Google::Cloud::Storage.new(project_id: "test-saba",credentials:"test-saba-firebase-adminsdk-3rxh5-d376eee199.json")
+    35:   bucket = storage.bucket "test-saba.appspot.com"
+    36:   bucket.create_file "local.file.ext"
+    37: 
+    38:   # 以下、上記で生成された自動IDをフィールドにもfield_idとして入れる
+    39:   random_ref.document_id
+    40:   fields_doc = firestore.doc "fields/#{@field.region}/#{@field.prefecture}/#{random_ref.document_id}"
+    41:   fields_doc.update({field_id: random_ref.document_id})
+    42: 
+    43:   # 以下サブコレクションを作り、データを挿入
+    44:   show_col = firestore.col "fields/1/1/#{random_ref.document_id}/show"
+    45:   random_ref = show_col.add({googlemap: @field.googlemap,nearest: @field.nearest,postalcode: @field.postalcode,
+    46:   shikuchoson: @field.shikuchoson,tel: @field.tel,charter: @field.charter,site_url: @field.site_url,teireikai: @field.teireikai,
+    47:   all_address: @field.all_address,facebook: @field.facebook,instagram: @field.instagram,twitter: @field.twitter,youtube: @field.youtube,
+    48:   cal: @field.cal,cost: @field.cost,time: @field.time})
+    49: 
+    50:   redirect_to @field, notice: "新規登録完了です"
+    51: end
+
+[1] pry(#<FieldsController>)> @field.region
+=> 2
+[2] pry(#<FieldsController>)> @field.name
+=> "null"
+[3] pry(#<FieldsController>)> 
+Sending HTTP get https://www.googleapis.com/storage/v1/b/test-saba.appspot.com?
+200
+#<HTTP::Message:0x007f9df85a2f38 @http_header=#<HTTP::Message::Headers:0x007f9df85a2f10 @http_version="1.1", @body_size=0, @chunked=false, @request_method="GET", @request_uri=#<Addressable::URI:0x3fcefc2d1e7c URI:https://www.googleapis.com/storage/v1/b/test-saba.appspot.com?>, @request_query=nil, @request_absolute_uri=nil, @status_code=200, @reason_phrase="OK", @body_type=nil, @body_charset=nil, @body_date=nil, @body_encoding=#<Encoding:UTF-8>, @is_request=false, @header_item=[["X-GUploader-UploadID", "AEnB2Uql6omCuvoQ5QFgFNNI6zAFKrEWwenE-fdLzeuOfGITpi_RrO2Ri6JPBi1o4L_3Ulb-ef0D07iZ50BOrun46rhIb4s9eg"], ["ETag", "CAI="], ["Vary", "Origin"], ["Vary", "X-Origin"], ["Content-Type", "application/json; charset=UTF-8"], ["Expires", "Wed, 31 Jan 2018 17:22:55 GMT"], ["Date", "Wed, 31 Jan 2018 17:22:55 GMT"], ["Cache-Control", "private, max-age=0, must-revalidate, no-transform"], ["Content-Length", "381"], ["Server", "UploadServer"], ["Alt-Svc", "hq=\":443\"; ma=2592000; quic=51303431; quic=51303339; quic=51303338; quic=51303337; quic=51303335,quic=\":443\"; ma=2592000; v=\"41,39,38,37,35\""]], @dumped=false>, @peer_cert=#<OpenSSL::X509::Certificate: subject=#<OpenSSL::X509::Name:0x007f9dfa534cc0>, issuer=#<OpenSSL::X509::Name:0x007f9dfa534c70>, serial=#<OpenSSL::BN:0x007f9dfa534c48>, not_before=2018-01-10 09:50:08 UTC, not_after=2018-04-04 09:40:00 UTC>, @http_body=#<HTTP::Message::Body:0x007f9df85a2e48 @body="{\n \"kind\": \"storage#bucket\",\n \"id\": \"test-saba.appspot.com\",\n \"selfLink\": \"https://www.googleapis.com/storage/v1/b/test-saba.appspot.com\",\n \"projectNumber\": \"167700807984\",\n \"name\": \"test-saba.appspot.com\",\n \"timeCreated\": \"2018-01-16T03:19:26.930Z\",\n \"updated\": \"2018-01-16T04:45:41.383Z\",\n \"metageneration\": \"2\",\n \"location\": \"US\",\n \"storageClass\": \"STANDARD\",\n \"etag\": \"CAI=\"\n}\n", @size=0, @positions=nil, @chunk_size=nil>, @previous=nil>
+Success - #<Google::Apis::StorageV1::Bucket:0x007f9dfb182a18
+ @etag="CAI=",
+ @id="test-saba.appspot.com",
+ @kind="storage#bucket",
+ @location="US",
+ @metageneration=2,
+ @name="test-saba.appspot.com",
+ @project_number=167700807984,
+ @self_link="https://www.googleapis.com/storage/v1/b/test-saba.appspot.com",
+ @storage_class="STANDARD",
+ @time_created=Tue, 16 Jan 2018 03:19:26 +0000,
+ @updated=Tue, 16 Jan 2018 04:45:41 +0000>
+
+Completed 500 Internal Server Error in 160979ms (ActiveRecord: 0.0ms)
+
+
+  
+ArgumentError (cannot find file local.file.ext):
+  
+app/controllers/fields_controller.rb:36:in `create'
+- Gracefully stopping, waiting for requests to finish
+=== puma shutdown: 2018-02-01 02:22:17 +0900 ===
+- Goodbye!
+Exiting
+peachkichinoMacBook-Pro:saba peachkichi$ rails s
+=> Booting Puma
+=> Rails 5.1.4 application starting in development 
+=> Run `rails server -h` for more startup options
+Puma starting in single mode...
+* Version 3.11.2 (ruby 2.4.1-p111), codename: Love Song
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://0.0.0.0:3000
+Use Ctrl-C to stop
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 02:22:47 +0900
+   (0.4ms)  SELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:57: warning: key :name is duplicated and overwritten on line 57
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 02:23:06 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (42699.1ms)
+Completed 200 OK in 43013ms (Views: 43004.1ms | ActiveRecord: 0.0ms)
+
+
+  Rendered fields/index.html.erb within layouts/application (36024.1ms)
+Completed 200 OK in 36064ms (Views: 36060.7ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:26:05 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (56.9ms)
+Completed 200 OK in 208ms (Views: 133.5ms | ActiveRecord: 1.8ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:28:39 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (82.0ms)
+Completed 200 OK in 175ms (Views: 163.7ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:30:42 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (113.3ms)
+Completed 200 OK in 183ms (Views: 179.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:31:09 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (20.1ms)
+Completed 200 OK in 163ms (Views: 160.9ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:35:24 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (51.8ms)
+Completed 200 OK in 185ms (Views: 173.3ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:36:34 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (373.3ms)
+Completed 500 Internal Server Error in 379ms (ActiveRecord: 0.0ms)
+
+
+  
+ActionView::Template::Error (undefined local variable or method `関東' for #<#<Class:0x007fc337b329d0>:0x007fc33e4b3170>):
+    12: 
+    13:   <div class="field">
+    14:     <%= form.label :地方番号%>
+    15:     <%= form.select :region,{北海道・東北: 1,関東 => 2,"中部" => 3,"関西" => 4,"中国" => 5,"四国" => 6,"九州・沖縄" => 7}%>
+    16:   </div>
+    17: 
+    18:   <div class="field">
+  
+app/views/fields/new.html.erb:15:in `block in _app_views_fields_new_html_erb___2525287162495104952_70238270243580'
+app/views/fields/new.html.erb:3:in `_app_views_fields_new_html_erb___2525287162495104952_70238270243580'
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:37:24 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (21.3ms)
+Completed 200 OK in 97ms (Views: 95.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:37:36 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (46.4ms)
+Completed 200 OK in 118ms (Views: 115.5ms | ActiveRecord: 0.0ms)
+
+
+^C- Gracefully stopping, waiting for requests to finish
+=== puma shutdown: 2018-02-01 02:46:59 +0900 ===
+- Goodbye!
+Exiting
+peachkichinoMacBook-Pro:saba peachkichi$ irb
+irb(main):001:0> (1..7) == 1
+=> false
+irb(main):002:0> (1..7) !== 1
+SyntaxError: (irb):2: syntax error, unexpected '='
+(1..7) !== 1
+          ^
+	from /Users/peachkichi/.rbenv/versions/2.4.1/bin/irb:11:in `<main>'
+irb(main):003:0> (1..7) == 1
+=> false
+irb(main):004:0> 1..7 = 1
+SyntaxError: (irb):4: syntax error, unexpected '=', expecting end-of-input
+1..7 = 1
+      ^
+	from /Users/peachkichi/.rbenv/versions/2.4.1/bin/irb:11:in `<main>'
+irb(main):005:0> num = 1
+=> 1
+irb(main):006:0> num.between?(1, 7)
+=> true
+irb(main):007:0> set_region_num(1)
+NoMethodError: undefined method `set_region_num' for main:Object
+Did you mean?  set_trace_func
+	from (irb):7
+	from /Users/peachkichi/.rbenv/versions/2.4.1/bin/irb:11:in `<main>'
+irb(main):008:0> set_region_num(2)
+NoMethodError: undefined method `set_region_num' for main:Object
+Did you mean?  set_trace_func
+	from (irb):8
+	from /Users/peachkichi/.rbenv/versions/2.4.1/bin/irb:11:in `<main>'
+irb(main):009:0> ^C
+irb(main):009:0> 
+peachkichinoMacBook-Pro:saba peachkichi$ rails s
+=> Booting Puma
+=> Rails 5.1.4 application starting in development 
+=> Run `rails server -h` for more startup options
+Puma starting in single mode...
+* Version 3.11.2 (ruby 2.4.1-p111), codename: Love Song
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://0.0.0.0:3000
+Use Ctrl-C to stop
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 02:58:09 +0900
+   (0.6ms)  SELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (44.3ms)
+Completed 200 OK in 434ms (Views: 391.1ms | ActiveRecord: 0.9ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 02:58:21 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"2Yaatq3HoRZMZs8KYdGox1wDdNi5gEYowbdtHIdCbzJumnkyHNTXF/+QtTivfru1pSFwi8EJSKsuKinKCumrkg==", "field"=>{"name"=>"bububu", "prefecture"=>"13", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"17", "opened_at(5i)"=>"58", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"17", "cal(5i)"=>"58", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Completed 500 Internal Server Error in 295ms (ActiveRecord: 0.0ms)
+
+
+  
+NoMethodError (undefined method `set_region_num' for #<FieldsController:0x007ff4142ca280>
+Did you mean?  set_response!):
+  
+app/controllers/fields_controller.rb:29:in `create'
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 03:00:15 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"2Yaatq3HoRZMZs8KYdGox1wDdNi5gEYowbdtHIdCbzJumnkyHNTXF/+QtTivfru1pSFwi8EJSKsuKinKCumrkg==", "field"=>{"name"=>"bububu", "prefecture"=>"13", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"17", "opened_at(5i)"=>"58", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"17", "cal(5i)"=>"58", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Completed 500 Internal Server Error in 329ms (ActiveRecord: 1.4ms)
+
+
+  
+NoMethodError (undefined method `set_region_num' for #<FieldsController:0x007ff4143112e8>
+Did you mean?  set_response!):
+  
+app/controllers/fields_controller.rb:29:in `create'
+^C- Gracefully stopping, waiting for requests to finish
+=== puma shutdown: 2018-02-01 03:00:37 +0900 ===
+- Goodbye!
+Exiting
+peachkichinoMacBook-Pro:saba peachkichi$ rails s
+=> Booting Puma
+=> Rails 5.1.4 application starting in development 
+=> Run `rails server -h` for more startup options
+Puma starting in single mode...
+* Version 3.11.2 (ruby 2.4.1-p111), codename: Love Song
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://0.0.0.0:3000
+Use Ctrl-C to stop
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:00:46 +0900
+   (0.6ms)  SELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (37.6ms)
+Completed 200 OK in 412ms (Views: 373.3ms | ActiveRecord: 0.9ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 03:00:56 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"8by3idsPFvqskgq5ZSY+LccSqnNQPENDHlIg28vPO8xGoFQNahxg+x9kcIuriS1fPjCuICi1TcDxz2QNRmT/bA==", "field"=>{"name"=>"twst", "prefecture"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"00", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"00", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Completed 500 Internal Server Error in 306ms (ActiveRecord: 0.0ms)
+
+
+  
+NoMethodError (undefined method `set_region_num' for #<FieldsController:0x007fe647c40628>
+Did you mean?  set_response!):
+  
+app/controllers/fields_controller.rb:29:in `create'
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 03:02:08 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"8by3idsPFvqskgq5ZSY+LccSqnNQPENDHlIg28vPO8xGoFQNahxg+x9kcIuriS1fPjCuICi1TcDxz2QNRmT/bA==", "field"=>{"name"=>"twst", "prefecture"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"00", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"00", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Completed 500 Internal Server Error in 415ms (ActiveRecord: 2.8ms)
+
+
+  
+NoMethodError (undefined method `region_num' for #<FieldsController:0x007fe64c35b4b8>):
+  
+app/controllers/fields_controller.rb:29:in `create'
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 03:03:07 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"8by3idsPFvqskgq5ZSY+LccSqnNQPENDHlIg28vPO8xGoFQNahxg+x9kcIuriS1fPjCuICi1TcDxz2QNRmT/bA==", "field"=>{"name"=>"twst", "prefecture"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"00", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"00", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+
+From: /Users/peachkichi/works/saba/app/controllers/fields_controller.rb @ line 28 FieldsController#create:
+
+    23: def create
+    24: 
+    25:   firestore = Google::Cloud::Firestore.new(project_id: "test-saba",credentials:"test-saba-firebase-adminsdk-3rxh5-d376eee199.json")
+    26:   @field = Field.new(field_params)
+    27:   # 以下フィールドIDは自動IDとなる＆フィールド一覧画面情報
+ => 28:     binding.pry
+    29:   fields_col = firestore.col "fields/#{@field.region}/#{@field.prefecture}"
+    30:   random_ref = fields_col.add({ field_id: @field.field_id,name: @field.name,prefecture: @field.prefecture,region: region_num(@field.prefecture),
+    31:   features: @field.features.split(",").map!{|x| x.to_i},types: @field.types.split(",").map!{|x| x.to_i},created_at: firestore.field_server_time})
+    32:   # 以下、画像を保存する
+    33:   require "google/cloud/storage"
+    34:   storage = Google::Cloud::Storage.new(project_id: "test-saba",credentials:"test-saba-firebase-adminsdk-3rxh5-d376eee199.json")
+    35:   bucket = storage.bucket "test-saba.appspot.com"
+    36:   bucket.create_file "local.file.ext"
+    37: 
+    38:   # 以下、上記で生成された自動IDをフィールドにもfield_idとして入れる
+    39:   random_ref.document_id
+    40:   fields_doc = firestore.doc "fields/#{@field.region}/#{@field.prefecture}/#{random_ref.document_id}"
+    41:   fields_doc.update({field_id: random_ref.document_id})
+    42: 
+    43:   # 以下サブコレクションを作り、データを挿入
+    44:   show_col = firestore.col "fields/1/1/#{random_ref.document_id}/show"
+    45:   random_ref = show_col.add({googlemap: @field.googlemap,nearest: @field.nearest,postalcode: @field.postalcode,
+    46:   shikuchoson: @field.shikuchoson,tel: @field.tel,charter: @field.charter,site_url: @field.site_url,teireikai: @field.teireikai,
+    47:   all_address: @field.all_address,facebook: @field.facebook,instagram: @field.instagram,twitter: @field.twitter,youtube: @field.youtube,
+    48:   cal: @field.cal,cost: @field.cost,time: @field.time})
+    49: 
+    50:   redirect_to @field, notice: "新規登録完了です"
+    51: end
+
+[1] pry(#<FieldsController>)> region_num(@field.prefecture) 
+NoMethodError: undefined method `region_num' for #<FieldsController:0x007fe64c7886a8>
+from (pry):1:in `create'
+[2] pry(#<FieldsController>)> @field.prefecture
+=> 1
+[3] pry(#<FieldsController>)> region_num(1)
+NoMethodError: undefined method `region_num' for #<FieldsController:0x007fe64c7886a8>
+from (pry):3:in `create'
+[4] pry(#<FieldsController>)> region_num(1)
+NoMethodError: undefined method `region_num' for #<FieldsController:0x007fe64c7886a8>
+from (pry):4:in `create'
+[5] pry(#<FieldsController>)> region_num(1)
+NoMethodError: undefined method `region_num' for #<FieldsController:0x007fe64c7886a8>
+from (pry):5:in `create'
+[6] pry(#<FieldsController>)> Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:07:31 +0900
+
+Completed 500 Internal Server Error in 274314ms (ActiveRecord: 1.3ms)
+
+
+  
+NoMethodError (undefined method `region_num' for #<FieldsController:0x007fe64c7886a8>):
+  
+app/controllers/fields_controller.rb:30:in `create'
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (284.5ms)
+Completed 500 Internal Server Error in 340ms (ActiveRecord: 1.0ms)
+
+
+  
+ActionView::Template::Error (undefined local variable or method `prefecture' for #<#<Class:0x007fe64bc3f0f8>:0x007fe64bc3d4d8>
+Did you mean?  presence):
+    17: 
+    18:   <div class="field">
+    19:     <%= form.label :地方番号%>
+    20:     <%= form.select :region,:value => set_region_num(set_region_num(prefecture[:value]))%>
+    21:   </div>
+    22: 
+    23:   <div class="field">
+  
+app/views/fields/new.html.erb:20:in `block in _app_views_fields_new_html_erb__3603581944455139911_70313545170120'
+app/views/fields/new.html.erb:3:in `_app_views_fields_new_html_erb__3603581944455139911_70313545170120'
+- Gracefully stopping, waiting for requests to finish
+=== puma shutdown: 2018-02-01 03:07:43 +0900 ===
+- Goodbye!
+Exiting
+peachkichinoMacBook-Pro:saba peachkichi$ rails s
+=> Booting Puma
+=> Rails 5.1.4 application starting in development 
+=> Run `rails server -h` for more startup options
+Puma starting in single mode...
+* Version 3.11.2 (ruby 2.4.1-p111), codename: Love Song
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://0.0.0.0:3000
+Use Ctrl-C to stop
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:08:12 +0900
+   (0.7ms)  SELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (300.2ms)
+Completed 500 Internal Server Error in 347ms (ActiveRecord: 0.8ms)
+
+
+  
+ActionView::Template::Error (undefined local variable or method `prefecture' for #<#<Class:0x007fdf63a1cfa8>:0x007fdf674b6880>
+Did you mean?  presence):
+    17: 
+    18:   <div class="field">
+    19:     <%= form.label :地方番号%>
+    20:     <%= form.select :region,:value => set_region_num(prefecture[:value])%>
+    21:   </div>
+    22: 
+    23:   <div class="field">
+  
+app/views/fields/new.html.erb:20:in `block in _app_views_fields_new_html_erb___2666259763245137074_70298712993600'
+app/views/fields/new.html.erb:3:in `_app_views_fields_new_html_erb___2666259763245137074_70298712993600'
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:08:52 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (3.5ms)
+Completed 500 Internal Server Error in 13ms (ActiveRecord: 0.0ms)
+
+
+  
+SyntaxError (/Users/peachkichi/works/saba/app/views/fields/new.html.erb:20: syntax error, unexpected '}', expecting =>
+egion_num({prefecture[:value]}));@output_buffer.safe_append=
+                              ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:146: syntax error, unexpected keyword_end, expecting ')'
+'.freeze; end 
+             ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:152: syntax error, unexpected keyword_ensure, expecting ')'
+          ensure
+                ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:154: syntax error, unexpected keyword_end, expecting ')'
+          end
+             ^):
+  
+app/views/fields/new.html.erb:20: syntax error, unexpected '}', expecting =>
+app/views/fields/new.html.erb:146: syntax error, unexpected keyword_end, expecting ')'
+app/views/fields/new.html.erb:152: syntax error, unexpected keyword_ensure, expecting ')'
+app/views/fields/new.html.erb:154: syntax error, unexpected keyword_end, expecting ')'
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:09:38 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (2.6ms)
+Completed 500 Internal Server Error in 9ms (ActiveRecord: 0.0ms)
+
+
+  
+SyntaxError (/Users/peachkichi/works/saba/app/views/fields/new.html.erb:20: syntax error, unexpected '}', expecting =>
+egion_num({prefecture[:value]})));@output_buffer.safe_append
+                              ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:146: syntax error, unexpected keyword_end, expecting ')'
+'.freeze; end 
+             ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:152: syntax error, unexpected keyword_ensure, expecting ')'
+          ensure
+                ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:154: syntax error, unexpected keyword_end, expecting ')'
+          end
+             ^):
+  
+app/views/fields/new.html.erb:20: syntax error, unexpected '}', expecting =>
+app/views/fields/new.html.erb:146: syntax error, unexpected keyword_end, expecting ')'
+app/views/fields/new.html.erb:152: syntax error, unexpected keyword_ensure, expecting ')'
+app/views/fields/new.html.erb:154: syntax error, unexpected keyword_end, expecting ')'
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:10:05 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (1.9ms)
+Completed 500 Internal Server Error in 9ms (ActiveRecord: 0.0ms)
+
+
+  
+SyntaxError (/Users/peachkichi/works/saba/app/views/fields/new.html.erb:20: syntax error, unexpected '}', expecting =>
+gion_num({:prefecture[:value]}));@output_buffer.safe_append=
+                              ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:146: syntax error, unexpected keyword_end, expecting ')'
+'.freeze; end 
+             ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:152: syntax error, unexpected keyword_ensure, expecting ')'
+          ensure
+                ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:154: syntax error, unexpected keyword_end, expecting ')'
+          end
+             ^):
+  
+app/views/fields/new.html.erb:20: syntax error, unexpected '}', expecting =>
+app/views/fields/new.html.erb:146: syntax error, unexpected keyword_end, expecting ')'
+app/views/fields/new.html.erb:152: syntax error, unexpected keyword_ensure, expecting ')'
+app/views/fields/new.html.erb:154: syntax error, unexpected keyword_end, expecting ')'
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:10:21 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (2.0ms)
+Completed 500 Internal Server Error in 10ms (ActiveRecord: 0.0ms)
+
+
+  
+SyntaxError (/Users/peachkichi/works/saba/app/views/fields/new.html.erb:20: syntax error, unexpected '}', expecting =>
+gion_num({:prefecture[:value]}));@output_buffer.safe_append=
+                              ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:146: syntax error, unexpected keyword_end, expecting ')'
+'.freeze; end 
+             ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:152: syntax error, unexpected keyword_ensure, expecting ')'
+          ensure
+                ^
+/Users/peachkichi/works/saba/app/views/fields/new.html.erb:154: syntax error, unexpected keyword_end, expecting ')'
+          end
+             ^):
+  
+app/views/fields/new.html.erb:20: syntax error, unexpected '}', expecting =>
+app/views/fields/new.html.erb:146: syntax error, unexpected keyword_end, expecting ')'
+app/views/fields/new.html.erb:152: syntax error, unexpected keyword_ensure, expecting ')'
+app/views/fields/new.html.erb:154: syntax error, unexpected keyword_end, expecting ')'
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:10:54 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (27.2ms)
+Completed 200 OK in 377ms (Views: 375.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:11:57 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (23.9ms)
+Completed 200 OK in 146ms (Views: 97.1ms | ActiveRecord: 1.0ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 03:13:23 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:59: warning: key :name is duplicated and overwritten on line 59
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"DUEylat5PrpeRR3sP3TT21l+5JTgUK9c/aUaWbYgn+m6XdERGmpIu+2zZ97x28CpoFzgx5jZod8SOF6PO4tbSQ==", "field"=>{"name"=>"null", "prefecture"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"12", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"12", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+
+From: /Users/peachkichi/works/saba/app/controllers/fields_controller.rb @ line 28 FieldsController#create:
+
+    23:   def create
+    24: 
+    25:     firestore = Google::Cloud::Firestore.new(project_id: "test-saba",credentials:"test-saba-firebase-adminsdk-3rxh5-d376eee199.json")
+    26:     @field = Field.new(field_params)
+    27:     # 以下フィールドIDは自動IDとなる＆フィールド一覧画面情報
+ => 28:       binding.pry
+    29:     fields_col = firestore.col "fields/#{@field.region}/#{@field.prefecture}"
+    30:     binding.pry
+    31:     random_ref = fields_col.add({ field_id: @field.field_id,name: @field.name,prefecture: @field.prefecture,region: set_region_i(@field.prefecture),
+    32:     features: @field.features.split(",").map!{|x| x.to_i},types: @field.types.split(",").map!{|x| x.to_i},created_at: firestore.field_server_time})
+    33:     # 以下、画像を保存する
+
+[1] pry(#<FieldsController>)> set_region_i(@field.prefecture)
+=> 1
+[2] pry(#<FieldsController>)> set_region_i(2)
+=> 1
+[3] pry(#<FieldsController>)> set_region_i(8)
+=> 2
+[4] pry(#<FieldsController>)> Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:15:15 +0900
+
+
+From: /Users/peachkichi/works/saba/app/controllers/fields_controller.rb @ line 30 FieldsController#create:
+
+    25:     firestore = Google::Cloud::Firestore.new(project_id: "test-saba",credentials:"test-saba-firebase-adminsdk-3rxh5-d376eee199.json")
+    26:     @field = Field.new(field_params)
+    27:     # 以下フィールドIDは自動IDとなる＆フィールド一覧画面情報
+    28:       binding.pry
+    29:     fields_col = firestore.col "fields/#{@field.region}/#{@field.prefecture}"
+ => 30:     binding.pry
+    31:     random_ref = fields_col.add({ field_id: @field.field_id,name: @field.name,prefecture: @field.prefecture,region: set_region_i(@field.prefecture),
+    32:     features: @field.features.split(",").map!{|x| x.to_i},types: @field.types.split(",").map!{|x| x.to_i},created_at: firestore.field_server_time})
+    33:     # 以下、画像を保存する
+    34:     require "google/cloud/storage"
+    35:     storage = Google::Cloud::Storage.new(project_id: "test-saba",credentials:"test-saba-firebase-adminsdk-3rxh5-d376eee199.json")
+
+[1] pry(#<FieldsController>)> 
+^CCompleted 500 Internal Server Error in 122094ms (ActiveRecord: 0.9ms)
+
+
+  
+Google::Cloud::InvalidArgumentError (3:Document name "projects/test-saba/databases/(default)/documents/fields//1/s4iVFPYDLn0eZn74qGWh" lacks a resource id at index 56.):
+  
+app/controllers/fields_controller.rb:31:in `create'
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:59: warning: key :name is duplicated and overwritten on line 59
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (23.3ms)
+Completed 200 OK in 176ms (Views: 140.1ms | ActiveRecord: 0.8ms)
+
+
+- Gracefully stopping, waiting for requests to finish
+=== puma shutdown: 2018-02-01 03:15:25 +0900 ===
+- Goodbye!
+Exiting
+peachkichinoMacBook-Pro:saba peachkichi$ rails s
+=> Booting Puma
+=> Rails 5.1.4 application starting in development 
+=> Run `rails server -h` for more startup options
+Puma starting in single mode...
+* Version 3.11.2 (ruby 2.4.1-p111), codename: Love Song
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://0.0.0.0:3000
+Use Ctrl-C to stop
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 03:22:51 +0900
+   (0.6ms)  SELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:57: warning: key :name is duplicated and overwritten on line 57
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"ZRIlGJ+z4Y03KDvdts+hHilGta93Uhm7dzZ5136ArD7SDsacLqCXjITeQe94YLJs0GSx/A/bFziYqz0B8ytong==", "field"=>{"name"=>"null", "prefecture"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"15", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"15", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Completed 500 Internal Server Error in 332ms (ActiveRecord: 0.9ms)
+
+
+  
+NoMethodError (undefined method `set_region_i' for #<FieldsController:0x007fa7dcd50490>
+Did you mean?  set_response!):
+  
+app/controllers/fields_controller.rb:29:in `create'
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 03:23:10 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:57: warning: key :name is duplicated and overwritten on line 57
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9267.9ms)
+Completed 200 OK in 9646ms (Views: 9643.9ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:24:48 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (280.1ms)
+Completed 200 OK in 1589ms (Views: 330.7ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:25:36 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (246.2ms)
+Completed 200 OK in 1620ms (Views: 309.7ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:25:52 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (295.5ms)
+Completed 200 OK in 1662ms (Views: 372.7ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 03:27:41 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (78.0ms)
+Completed 200 OK in 351ms (Views: 147.1ms | ActiveRecord: 2.2ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:28:47 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (10.7ms)
+Completed 500 Internal Server Error in 1389ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 03:28:57 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8700.3ms)
+Completed 200 OK in 8762ms (Views: 8760.3ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:29:07 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (183.6ms)
+Completed 200 OK in 1451ms (Views: 225.6ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:29:13 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (2.2ms)
+Completed 500 Internal Server Error in 1256ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:29:29 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (365.1ms)
+Completed 200 OK in 1598ms (Views: 418.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:29:44 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (2.4ms)
+Completed 500 Internal Server Error in 1207ms (ActiveRecord: 0.0ms)
+
+
+  
+SyntaxError (/Users/peachkichi/works/saba/app/views/fields/edit.html.erb:21: syntax error, unexpected ')'
+value => @index[:prefecture],);@output_buffer.safe_append='
+                              ^
+/Users/peachkichi/works/saba/app/views/fields/edit.html.erb:158: syntax error, unexpected keyword_end, expecting ')'
+ end 
+    ^
+/Users/peachkichi/works/saba/app/views/fields/edit.html.erb:164: syntax error, unexpected keyword_ensure, expecting ')'
+          ensure
+                ^
+/Users/peachkichi/works/saba/app/views/fields/edit.html.erb:166: syntax error, unexpected keyword_end, expecting ')'
+          end
+             ^):
+  
+app/views/fields/edit.html.erb:21: syntax error, unexpected ')'
+app/views/fields/edit.html.erb:158: syntax error, unexpected keyword_end, expecting ')'
+app/views/fields/edit.html.erb:164: syntax error, unexpected keyword_ensure, expecting ')'
+app/views/fields/edit.html.erb:166: syntax error, unexpected keyword_end, expecting ')'
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:30:06 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (262.3ms)
+Completed 200 OK in 1568ms (Views: 316.4ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:30:18 +0900
+Processing by FieldsController#update as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"W/alcJM/ofytEY3pa7Uajy2iS2ae6VVsh44/iVcAM+Hs6kb0IizX/R7n99ulGgn91IBPNeZgW+9oE3tf2qv3QQ==", "name"=>"koi", "prefecture"=>"1", "region"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"30", "features"=>"1", "types"=>"1", "image1"=>"1", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"mmm", "nearest"=>"はい終わり", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"30", "cost"=>"", "time"=>"", "commit"=>"Save ", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2079ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 03:30:20 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8683.6ms)
+Completed 200 OK in 8726ms (Views: 8724.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:30:32 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (183.0ms)
+Completed 200 OK in 1435ms (Views: 227.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:30:44 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (237.1ms)
+Completed 200 OK in 1472ms (Views: 276.1ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:31:11 +0900
+Processing by FieldsController#update as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"6Ztgd00yw8hXvyyE+saNDYemiAb/7psx9fhIdkzKGN+qFT9UdjAIGLLaWQyDZwvtUPCi+i/4K18PLrH1kGb6mQ==", "name"=>"koi", "prefecture"=>"1", "region"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"30", "features"=>"1", "types"=>"1", "image1"=>"1", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"mmm", "nearest"=>"はい終わり", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"30", "cost"=>"", "time"=>"", "commit"=>"Save ", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2792ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 03:31:14 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (11560.9ms)
+Completed 200 OK in 11636ms (Views: 11634.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:31:27 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (280.5ms)
+Completed 200 OK in 1666ms (Views: 342.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:31:59 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (199.9ms)
+Completed 200 OK in 1495ms (Views: 274.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:32:02 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (176.8ms)
+Completed 200 OK in 1501ms (Views: 263.5ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:32:08 +0900
+Processing by FieldsController#update as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"TDVmCOVQHOiXX64bs7x6+vJbMdZLkw9OYhBz93NYbXMPuzkr3lLXOHI625PKHfwaJQ0bKpuFvyCYxop0r/SPNQ==", "name"=>"koi", "prefecture"=>"1", "region"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"32", "features"=>"1", "types"=>"1", "image1"=>"1", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"mmm", "nearest"=>"はい終わり", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"32", "cost"=>"", "time"=>"", "commit"=>"Save ", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2157ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 03:32:10 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8681.0ms)
+Completed 200 OK in 8722ms (Views: 8720.3ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:32:21 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (297.8ms)
+Completed 200 OK in 1612ms (Views: 341.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:33:11 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (297.8ms)
+Completed 200 OK in 1733ms (Views: 375.4ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:33:23 +0900
+Processing by FieldsController#update as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"HlUPb3E8LKeu0utxj9knJkkmcdWHGsemx80/6NKBJStd21BMSj7nd0u3nvn2eKHGnnBbKVcMd8g9G8ZrDi3HbQ==", "name"=>"koi", "prefecture"=>"1", "region"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"33", "features"=>"1", "types"=>"1", "image1"=>"1", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"mmm", "nearest"=>"はい終わり", "postalcode"=>"7777777", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"33", "cost"=>"", "time"=>"", "commit"=>"Save ", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2178ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 03:33:25 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8680.1ms)
+Completed 200 OK in 8736ms (Views: 8734.4ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:33:39 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (293.1ms)
+Completed 200 OK in 1614ms (Views: 345.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:34:24 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:57: warning: key :name is duplicated and overwritten on line 57
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (207.1ms)
+Completed 200 OK in 1587ms (Views: 265.3ms)
+
+
+Started POST "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:34:47 +0900
+Processing by FieldsController#update as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"jR3NUr1tbLYWctRDncZ64VNpvtDBlqQhUAqb76PbwNDOk5Jxhm+nZvMXocvkZ/wBhD+ULBGAFE+q3GJsf3cilg==", "name"=>"koi", "prefecture"=>"1", "region"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"34", "features"=>"1", "types"=>"1", "image1"=>"1", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"mmm", "nearest"=>"はい終わり", "postalcode"=>"yahhooo", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"34", "cost"=>"", "time"=>"", "commit"=>"Save ", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2151ms
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 03:34:50 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8911.2ms)
+Completed 200 OK in 8969ms (Views: 8967.8ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:35:21 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (305.1ms)
+Completed 200 OK in 1579ms (Views: 361.4ms)
+
+
+Started POST "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:57:25 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:57: warning: key :name is duplicated and overwritten on line 57
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#update as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"tvvVHRgJjO1JaBUwx6DHG3CFRxxRylqUaALJFdp2tpQB5zaZqRr67PqebwIJD9RpiadDTylDVBeHn43DV91yNA==", "name"=>"koi", "prefecture"=>"1", "region"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"34", "features"=>"1", "types"=>"1", "image1"=>"1", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"mmm", "nearest"=>"はい終わり", "postalcode"=>"yahhooo", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"34", "cost"=>"", "time"=>"", "commit"=>"Save ", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2410ms
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 03:57:28 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8875.5ms)
+Completed 200 OK in 8998ms (Views: 8995.1ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:59:20 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (221.1ms)
+Completed 200 OK in 1856ms (Views: 323.7ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:59:29 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (264.2ms)
+Completed 200 OK in 1554ms (Views: 320.0ms)
+
+
+Started POST "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 03:59:34 +0900
+Processing by FieldsController#update as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"EK02PH2KjREuwClpVO8jZpFTo1l7TM6c2NiHg8WEzdRTI2kfRohGwculXOEtTqWGRgWJpatafvIiDn4AGSgvkg==", "name"=>"koiuhgugbu", "prefecture"=>"1", "region"=>"1", "opened_at(1i)"=>"2018", "opened_at(2i)"=>"1", "opened_at(3i)"=>"31", "opened_at(4i)"=>"18", "opened_at(5i)"=>"59", "features"=>"1", "types"=>"1", "image1"=>"1", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"mmm", "nearest"=>"はい終わり", "postalcode"=>"yahhooo", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"18", "cal(5i)"=>"59", "cost"=>"", "time"=>"", "commit"=>"Save ", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2151ms
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 03:59:36 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9712.3ms)
+Completed 200 OK in 9773ms (Views: 9771.2ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 04:02:45 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (202.6ms)
+Completed 200 OK in 1806ms (Views: 303.8ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 04:02:57 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (424.8ms)
+Completed 200 OK in 1954ms (Views: 472.3ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 04:04:10 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (276.5ms)
+Completed 200 OK in 1755ms (Views: 336.6ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 04:04:39 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (295.9ms)
+Completed 200 OK in 1560ms (Views: 358.3ms)
+
+
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 04:05:32 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (361.3ms)
+Completed 500 Internal Server Error in 1614ms
+
+
+  
+ActionView::Template::Error (undefined local variable or method `もし間違えた場合は、Firestoreのコンソールで一度フィールド情報を削除し、新規作成し治してください。' for #<#<Class:0x007fa7d93e8f40>:0x007fa7e01cb698>):
+    12: 
+    13:   <div class="field">
+    14:     <%= form.label :都道府県番号は重要なパスの一部になっており、変更できません。
+    15:     もし間違えた場合は、Firestoreのコンソールで一度フィールド情報を削除し、新規作成し治してください。 %>
+    16:   </div>
+    17: 
+    18:   <div class="field">
+  
+app/views/fields/edit.html.erb:15:in `block in _app_views_fields_edit_html_erb__1123366244670494224_70179498135820'
+app/views/fields/edit.html.erb:3:in `_app_views_fields_edit_html_erb__1123366244670494224_70179498135820'
+Started GET "/fields/edit/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 04:05:39 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (300.6ms)
+Completed 200 OK in 1650ms (Views: 360.6ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 04:08:45 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8705.5ms)
+Completed 200 OK in 8759ms (Views: 8757.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:08:57 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (26.5ms)
+Completed 200 OK in 153ms (Views: 68.7ms | ActiveRecord: 1.8ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:09:46 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (44.6ms)
+Completed 200 OK in 112ms (Views: 109.6ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 04:10:18 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"olh3cqHiewNKDcs1zu2m4VC94JGpFQj1Pb8FYdk4oJYVRJT2EPENAvn7sQcAQrWTqZ/kwtGcBnbSIkG3VJNkNg==", "field"=>{"name"=>"nullsaascscasdcs", "prefecture"=>"1", "opened_at"=>"2018-02-15", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"19", "cal(5i)"=>"09", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Completed 500 Internal Server Error in 1378ms (ActiveRecord: 0.0ms)
+
+
+  
+Google::Cloud::InvalidArgumentError (3:Document name "projects/test-saba/databases/(default)/documents/fields//1/4kX1mSrncgLzKgGrMuR6" lacks a resource id at index 56.):
+  
+app/controllers/fields_controller.rb:29:in `create'
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 04:12:36 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:58: warning: key :name is duplicated and overwritten on line 58
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"olh3cqHiewNKDcs1zu2m4VC94JGpFQj1Pb8FYdk4oJYVRJT2EPENAvn7sQcAQrWTqZ/kwtGcBnbSIkG3VJNkNg==", "field"=>{"name"=>"nullsaascscasdcs", "prefecture"=>"1", "opened_at"=>"2018-02-15", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"19", "cal(5i)"=>"09", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Sending HTTP get https://www.googleapis.com/storage/v1/b/test-saba.appspot.com?
+200
+#<HTTP::Message:0x007fa7e0871b50 @http_header=#<HTTP::Message::Headers:0x007fa7e0871b28 @http_version="1.1", @body_size=0, @chunked=false, @request_method="GET", @request_uri=#<Addressable::URI:0x3fd3f0439974 URI:https://www.googleapis.com/storage/v1/b/test-saba.appspot.com?>, @request_query=nil, @request_absolute_uri=nil, @status_code=200, @reason_phrase="OK", @body_type=nil, @body_charset=nil, @body_date=nil, @body_encoding=#<Encoding:UTF-8>, @is_request=false, @header_item=[["X-GUploader-UploadID", "AEnB2UqtAUeABSTLPjfmCl6KacCkInHbughUUbskWVu4-kI61tj2Bhre6kvD-Il9O6Q2NZnJ6k_yBFkM9CDPyTU-uiCLkkmmog"], ["ETag", "CAI="], ["Vary", "Origin"], ["Vary", "X-Origin"], ["Content-Type", "application/json; charset=UTF-8"], ["Expires", "Wed, 31 Jan 2018 19:13:17 GMT"], ["Date", "Wed, 31 Jan 2018 19:13:17 GMT"], ["Cache-Control", "private, max-age=0, must-revalidate, no-transform"], ["Content-Length", "381"], ["Server", "UploadServer"], ["Alt-Svc", "hq=\":443\"; ma=2592000; quic=51303431; quic=51303339; quic=51303338; quic=51303337; quic=51303335,quic=\":443\"; ma=2592000; v=\"41,39,38,37,35\""]], @dumped=false>, @peer_cert=#<OpenSSL::X509::Certificate: subject=#<OpenSSL::X509::Name:0x007fa7e0859d48>, issuer=#<OpenSSL::X509::Name:0x007fa7e0859ca8>, serial=#<OpenSSL::BN:0x007fa7e0859c80>, not_before=2018-01-16 08:41:02 UTC, not_after=2018-04-10 08:41:00 UTC>, @http_body=#<HTTP::Message::Body:0x007fa7e08719e8 @body="{\n \"kind\": \"storage#bucket\",\n \"id\": \"test-saba.appspot.com\",\n \"selfLink\": \"https://www.googleapis.com/storage/v1/b/test-saba.appspot.com\",\n \"projectNumber\": \"167700807984\",\n \"name\": \"test-saba.appspot.com\",\n \"timeCreated\": \"2018-01-16T03:19:26.930Z\",\n \"updated\": \"2018-01-16T04:45:41.383Z\",\n \"metageneration\": \"2\",\n \"location\": \"US\",\n \"storageClass\": \"STANDARD\",\n \"etag\": \"CAI=\"\n}\n", @size=0, @positions=nil, @chunk_size=nil>, @previous=nil>
+Success - #<Google::Apis::StorageV1::Bucket:0x007fa7e0853c18
+ @etag="CAI=",
+ @id="test-saba.appspot.com",
+ @kind="storage#bucket",
+ @location="US",
+ @metageneration=2,
+ @name="test-saba.appspot.com",
+ @project_number=167700807984,
+ @self_link="https://www.googleapis.com/storage/v1/b/test-saba.appspot.com",
+ @storage_class="STANDARD",
+ @time_created=Tue, 16 Jan 2018 03:19:26 +0000,
+ @updated=Tue, 16 Jan 2018 04:45:41 +0000>
+
+Completed 500 Internal Server Error in 2831ms (ActiveRecord: 1.5ms)
+
+
+  
+ArgumentError (cannot find file local.file.ext):
+  
+app/controllers/fields_controller.rb:36:in `create'
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 04:12:45 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8874.9ms)
+Completed 200 OK in 8944ms (Views: 8942.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 04:12:58 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (270.2ms)
+Completed 200 OK in 1492ms (Views: 324.6ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/" for 127.0.0.1 at 2018-02-01 04:13:07 +0900
+  
+ActionController::RoutingError (No route matches [GET] "/fields/show/1/1"):
+  
+vendor/bundle/ruby/2.4.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/debug_exceptions.rb:63:in `call'
+vendor/bundle/ruby/2.4.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/show_exceptions.rb:31:in `call'
+vendor/bundle/ruby/2.4.0/gems/railties-5.1.4/lib/rails/rack/logger.rb:36:in `call_app'
+vendor/bundle/ruby/2.4.0/gems/railties-5.1.4/lib/rails/rack/logger.rb:24:in `block in call'
+vendor/bundle/ruby/2.4.0/gems/activesupport-5.1.4/lib/active_support/tagged_logging.rb:69:in `block in tagged'
+vendor/bundle/ruby/2.4.0/gems/activesupport-5.1.4/lib/active_support/tagged_logging.rb:26:in `tagged'
+vendor/bundle/ruby/2.4.0/gems/activesupport-5.1.4/lib/active_support/tagged_logging.rb:69:in `tagged'
+vendor/bundle/ruby/2.4.0/gems/railties-5.1.4/lib/rails/rack/logger.rb:24:in `call'
+vendor/bundle/ruby/2.4.0/gems/sprockets-rails-3.2.1/lib/sprockets/rails/quiet_assets.rb:13:in `call'
+vendor/bundle/ruby/2.4.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/remote_ip.rb:79:in `call'
+vendor/bundle/ruby/2.4.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/request_id.rb:25:in `call'
+vendor/bundle/ruby/2.4.0/gems/rack-2.0.3/lib/rack/method_override.rb:22:in `call'
+vendor/bundle/ruby/2.4.0/gems/rack-2.0.3/lib/rack/runtime.rb:22:in `call'
+vendor/bundle/ruby/2.4.0/gems/activesupport-5.1.4/lib/active_support/cache/strategy/local_cache_middleware.rb:27:in `call'
+vendor/bundle/ruby/2.4.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/executor.rb:12:in `call'
+vendor/bundle/ruby/2.4.0/gems/actionpack-5.1.4/lib/action_dispatch/middleware/static.rb:125:in `call'
+vendor/bundle/ruby/2.4.0/gems/rack-2.0.3/lib/rack/sendfile.rb:111:in `call'
+vendor/bundle/ruby/2.4.0/gems/railties-5.1.4/lib/rails/engine.rb:522:in `call'
+vendor/bundle/ruby/2.4.0/gems/puma-3.11.2/lib/puma/configuration.rb:225:in `call'
+vendor/bundle/ruby/2.4.0/gems/puma-3.11.2/lib/puma/server.rb:624:in `handle_request'
+vendor/bundle/ruby/2.4.0/gems/puma-3.11.2/lib/puma/server.rb:438:in `process_client'
+vendor/bundle/ruby/2.4.0/gems/puma-3.11.2/lib/puma/server.rb:302:in `block in run'
+vendor/bundle/ruby/2.4.0/gems/puma-3.11.2/lib/puma/thread_pool.rb:120:in `block in spawn_thread'
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 04:13:17 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8799.7ms)
+Completed 200 OK in 8876ms (Views: 8873.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 04:13:29 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9651.7ms)
+Completed 200 OK in 9900ms (Views: 9898.9ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:16:19 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (189.9ms)
+Completed 200 OK in 589ms (Views: 573.0ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 04:16:29 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"h/koDv0AyoMeifPrKdlC/6plyitwtwtKnPgr6FGSYqKuijY2h+4dXtJA+7/jeVjJMa8M+2pkgjBpIZDdNURjGQ==", "field"=>{"name"=>"arere", "prefecture"=>"3", "opened_at"=>"", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"19", "cal(5i)"=>"16", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Sending HTTP get https://www.googleapis.com/storage/v1/b/test-saba.appspot.com?
+200
+#<HTTP::Message:0x007fa7e01fbac8 @http_header=#<HTTP::Message::Headers:0x007fa7e01fbaa0 @http_version="1.1", @body_size=0, @chunked=false, @request_method="GET", @request_uri=#<Addressable::URI:0x3fd3f0404454 URI:https://www.googleapis.com/storage/v1/b/test-saba.appspot.com?>, @request_query=nil, @request_absolute_uri=nil, @status_code=200, @reason_phrase="OK", @body_type=nil, @body_charset=nil, @body_date=nil, @body_encoding=#<Encoding:UTF-8>, @is_request=false, @header_item=[["X-GUploader-UploadID", "AEnB2Upv1yMYO7jK3MjjXorfuYbXYW7iapSlAiLGDwMABAB0j-fjtqn9i9BTS84j8ygEIUG0SIRXkq4L9xkao8oAwuDSAQeGWw"], ["ETag", "CAI="], ["Vary", "Origin"], ["Vary", "X-Origin"], ["Content-Type", "application/json; charset=UTF-8"], ["Expires", "Wed, 31 Jan 2018 19:17:09 GMT"], ["Date", "Wed, 31 Jan 2018 19:17:09 GMT"], ["Cache-Control", "private, max-age=0, must-revalidate, no-transform"], ["Content-Length", "381"], ["Server", "UploadServer"], ["Alt-Svc", "hq=\":443\"; ma=2592000; quic=51303431; quic=51303339; quic=51303338; quic=51303337; quic=51303335,quic=\":443\"; ma=2592000; v=\"41,39,38,37,35\""]], @dumped=false>, @peer_cert=#<OpenSSL::X509::Certificate: subject=#<OpenSSL::X509::Name:0x007fa7e01ea660>, issuer=#<OpenSSL::X509::Name:0x007fa7e01ea638>, serial=#<OpenSSL::BN:0x007fa7e01ea610>, not_before=2018-01-16 08:41:02 UTC, not_after=2018-04-10 08:41:00 UTC>, @http_body=#<HTTP::Message::Body:0x007fa7e01fb988 @body="{\n \"kind\": \"storage#bucket\",\n \"id\": \"test-saba.appspot.com\",\n \"selfLink\": \"https://www.googleapis.com/storage/v1/b/test-saba.appspot.com\",\n \"projectNumber\": \"167700807984\",\n \"name\": \"test-saba.appspot.com\",\n \"timeCreated\": \"2018-01-16T03:19:26.930Z\",\n \"updated\": \"2018-01-16T04:45:41.383Z\",\n \"metageneration\": \"2\",\n \"location\": \"US\",\n \"storageClass\": \"STANDARD\",\n \"etag\": \"CAI=\"\n}\n", @size=0, @positions=nil, @chunk_size=nil>, @previous=nil>
+Success - #<Google::Apis::StorageV1::Bucket:0x007fa7e01e8a18
+ @etag="CAI=",
+ @id="test-saba.appspot.com",
+ @kind="storage#bucket",
+ @location="US",
+ @metageneration=2,
+ @name="test-saba.appspot.com",
+ @project_number=167700807984,
+ @self_link="https://www.googleapis.com/storage/v1/b/test-saba.appspot.com",
+ @storage_class="STANDARD",
+ @time_created=Tue, 16 Jan 2018 03:19:26 +0000,
+ @updated=Tue, 16 Jan 2018 04:45:41 +0000>
+
+Completed 500 Internal Server Error in 1921ms (ActiveRecord: 0.0ms)
+
+
+  
+ArgumentError (cannot find file local.file.ext):
+  
+app/controllers/fields_controller.rb:36:in `create'
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 04:17:19 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:55: warning: key :name is duplicated and overwritten on line 55
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"h/koDv0AyoMeifPrKdlC/6plyitwtwtKnPgr6FGSYqKuijY2h+4dXtJA+7/jeVjJMa8M+2pkgjBpIZDdNURjGQ==", "field"=>{"name"=>"arere", "prefecture"=>"3", "opened_at"=>"", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal(1i)"=>"2018", "cal(2i)"=>"1", "cal(3i)"=>"31", "cal(4i)"=>"19", "cal(5i)"=>"16", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2313ms (ActiveRecord: 1.5ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 04:17:21 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9428.9ms)
+Completed 200 OK in 9490ms (Views: 9488.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/3/Ef9azD0QhoCllspqjuZ7" for 127.0.0.1 at 2018-02-01 04:17:43 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"3", "field_id"=>"Ef9azD0QhoCllspqjuZ7"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (286.7ms)
+Completed 200 OK in 1642ms (Views: 337.7ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 04:18:07 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9605.2ms)
+Completed 200 OK in 9665ms (Views: 9662.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/00IFeVZVkdpsruVGjWEZ" for 127.0.0.1 at 2018-02-01 04:22:27 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"00IFeVZVkdpsruVGjWEZ"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (3.9ms)
+Completed 500 Internal Server Error in 1310ms (ActiveRecord: 0.0ms)
+
+
+  
+ActionView::Template::Error (name is not contained in the data):
+     5:   <h3>フィールド一覧画面情報</h3>
+     6:   <p>
+     7:    <strong>フィールド名</strong>
+     8:    <%= @index[:name]%>
+     9:   </p>
+    10: 
+    11:   <p>
+  
+app/views/fields/show.html.erb:8:in `_app_views_fields_show_html_erb___4512581940100604493_70179453688380'
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 04:22:30 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+Started GET "/fields/show/1/3/Ef9azD0QhoCllspqjuZ7" for 127.0.0.1 at 2018-02-01 04:22:32 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"3", "field_id"=>"Ef9azD0QhoCllspqjuZ7"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (3.1ms)
+Completed 500 Internal Server Error in 1269ms (ActiveRecord: 0.0ms)
+
+
+  
+ActionView::Template::Error (name is not contained in the data):
+     5:   <h3>フィールド一覧画面情報</h3>
+     6:   <p>
+     7:    <strong>フィールド名</strong>
+     8:    <%= @index[:name]%>
+     9:   </p>
+    10: 
+    11:   <p>
+  
+app/views/fields/show.html.erb:8:in `_app_views_fields_show_html_erb___4512581940100604493_70179498105360'
+  Rendered fields/index.html.erb within layouts/application (8783.4ms)
+Completed 200 OK in 8836ms (Views: 8834.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:27:37 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (50.5ms)
+Completed 200 OK in 238ms (Views: 220.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:29:31 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (110.7ms)
+Completed 200 OK in 260ms (Views: 253.3ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 04:29:39 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"VZs7Li8qsCDCdQCg5Y9p2iZryoAA/s1d0nXUTN5wRN3ih9iqnjnGIXGDepIrIHqo30nO03h3w9496JCaU9uAfQ==", "field"=>{"name"=>"null", "prefecture"=>"1", "opened_at"=>"", "features"=>"null", "types"=>"null", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal"=>"2018-02-14", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2289ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 04:29:41 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8605.9ms)
+Completed 200 OK in 8647ms (Views: 8645.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:31:39 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (26.8ms)
+Completed 200 OK in 100ms (Views: 96.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:32:07 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (17.7ms)
+Completed 200 OK in 88ms (Views: 86.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:32:09 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (12.1ms)
+Completed 200 OK in 56ms (Views: 51.9ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:33:11 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (14.9ms)
+Completed 200 OK in 79ms (Views: 77.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:33:53 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (16.1ms)
+Completed 200 OK in 75ms (Views: 73.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:34:42 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (21.9ms)
+Completed 200 OK in 83ms (Views: 81.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:40:28 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (14.0ms)
+Completed 500 Internal Server Error in 34ms (ActiveRecord: 0.0ms)
+
+
+  
+SyntaxError (/Users/peachkichi/works/saba/app/views/fields/new.html.erb:35: syntax error, unexpected ','
+d=( form.check_box :features,,{なし:'1',　定例会:'1', 
+                              ^):
+  
+app/views/fields/new.html.erb:35: syntax error, unexpected ','
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:44:23 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (41.6ms)
+Completed 200 OK in 143ms (Views: 139.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:57:10 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (41.7ms)
+Completed 200 OK in 165ms (Views: 152.7ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:57:22 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (18.3ms)
+Completed 200 OK in 103ms (Views: 99.3ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 04:59:40 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (76.7ms)
+Completed 200 OK in 294ms (Views: 241.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:06:06 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (23.4ms)
+Completed 500 Internal Server Error in 48ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:06:52 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (8.0ms)
+Completed 500 Internal Server Error in 17ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:06:54 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (6.7ms)
+Completed 500 Internal Server Error in 17ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:07:26 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (4.3ms)
+Completed 500 Internal Server Error in 12ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:07:59 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (10.9ms)
+Completed 500 Internal Server Error in 25ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:09:24 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (89.5ms)
+Completed 200 OK in 289ms (Views: 233.6ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:09:38 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (22.3ms)
+Completed 200 OK in 126ms (Views: 123.4ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:10:30 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (19.0ms)
+Completed 200 OK in 100ms (Views: 98.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:11:01 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (17.2ms)
+Completed 200 OK in 93ms (Views: 89.3ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:11:27 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (17.1ms)
+Completed 200 OK in 104ms (Views: 101.4ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:12:06 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (62.8ms)
+Completed 200 OK in 143ms (Views: 138.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:12:08 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (15.5ms)
+Completed 200 OK in 63ms (Views: 60.7ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:12:13 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (11.9ms)
+Completed 200 OK in 62ms (Views: 60.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:12:47 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (18.6ms)
+Completed 200 OK in 82ms (Views: 79.6ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:15:28 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (56.5ms)
+Completed 200 OK in 183ms (Views: 167.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:15:50 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (21.2ms)
+Completed 200 OK in 109ms (Views: 105.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 05:25:40 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (13882.3ms)
+Completed 200 OK in 13976ms (Views: 13958.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:25:56 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (290.9ms)
+Completed 200 OK in 1561ms (Views: 346.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:28:37 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (231.2ms)
+Completed 200 OK in 1768ms (Views: 332.9ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 05:28:52 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:28:54 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (203.1ms)
+Completed 200 OK in 1475ms (Views: 268.5ms | ActiveRecord: 0.0ms)
+
+
+  Rendered fields/index.html.erb within layouts/application (8868.0ms)
+Completed 200 OK in 8914ms (Views: 8911.7ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:29:58 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (282.6ms)
+Completed 200 OK in 1632ms (Views: 342.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:30:16 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (234.6ms)
+Completed 200 OK in 1474ms (Views: 284.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:33:52 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (196.8ms)
+Completed 200 OK in 1610ms (Views: 266.4ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:34:37 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (189.8ms)
+Completed 200 OK in 1581ms (Views: 246.4ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:34:52 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (283.5ms)
+Completed 200 OK in 1613ms (Views: 335.3ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:35:19 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (291.4ms)
+Completed 200 OK in 1586ms (Views: 350.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:35:28 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (289.4ms)
+Completed 200 OK in 1667ms (Views: 340.3ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:35:41 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (218.7ms)
+Completed 200 OK in 1426ms (Views: 269.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:36:19 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (241.5ms)
+Completed 200 OK in 915ms (Views: 301.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:36:28 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (291.5ms)
+Completed 200 OK in 1534ms (Views: 326.5ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:36:52 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (3.5ms)
+Completed 500 Internal Server Error in 1287ms (ActiveRecord: 0.0ms)
+
+
+  
+SyntaxError (/Users/peachkichi/works/saba/app/views/fields/show.html.erb:19: syntax error, unexpected tINTEGER, expecting ')'
+pend=( @index[:region]       1.北海道・東北　2.関東
+                              ^):
+  
+app/views/fields/show.html.erb:19: syntax error, unexpected tINTEGER, expecting ')'
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:37:32 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (293.2ms)
+Completed 200 OK in 1611ms (Views: 345.4ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:37:57 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (204.3ms)
+Completed 200 OK in 1522ms (Views: 250.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:39:13 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (275.6ms)
+Completed 200 OK in 1738ms (Views: 370.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:40:30 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (284.9ms)
+Completed 200 OK in 1644ms (Views: 340.6ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:42:19 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (287.6ms)
+Completed 200 OK in 1707ms (Views: 337.7ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:43:57 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (291.1ms)
+Completed 200 OK in 1740ms (Views: 407.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:44:05 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (206.3ms)
+Completed 200 OK in 1501ms (Views: 249.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:44:35 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (294.5ms)
+Completed 200 OK in 1528ms (Views: 346.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:44:58 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (248.3ms)
+Completed 200 OK in 1542ms (Views: 298.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:45:06 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (215.0ms)
+Completed 200 OK in 1509ms (Views: 267.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:45:36 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (190.9ms)
+Completed 200 OK in 1452ms (Views: 246.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:45:57 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (298.8ms)
+Completed 200 OK in 1527ms (Views: 358.0ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:53:17 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:55: warning: key :name is duplicated and overwritten on line 55
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#update as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"iNDoljHBNkboLoZnLBGX6JTDtiOL6mQjSdPXtXC5ICA/zAsSgNJAR1vY/FXivoSabeGycPNjaqCmTpNj/RLkgA==", "name"=>"null", "opened_at"=>"2018-02-14", "features"=>"0", "types"=>"0", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal"=>"", "cost"=>"", "time"=>"", "commit"=>"Save ", "region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2421ms
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 05:53:20 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8482.0ms)
+Completed 200 OK in 8559ms (Views: 8556.3ms)
+
+
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:54:43 +0900
+  
+SyntaxError (/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:56: syntax error, unexpected tIDENTIFIER, expecting '}'
+  features: params[:features].split(",")
+          ^
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:56: syntax error, unexpected ',', expecting keyword_end
+].split(",").map!{|x| x.to_i},types: params[:types].split(",
+                              ^
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:56: syntax error, unexpected ',', expecting keyword_end
+].split(",").map!{|x| x.to_i},updated_at:firestore.field_ser
+                              ^
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:56: syntax error, unexpected '}', expecting keyword_end
+t:firestore.field_server_time},  merge: true)
+                              ^):
+  
+app/controllers/fields_controller.rb:56: syntax error, unexpected tIDENTIFIER, expecting '}'
+app/controllers/fields_controller.rb:56: syntax error, unexpected ',', expecting keyword_end
+app/controllers/fields_controller.rb:56: syntax error, unexpected ',', expecting keyword_end
+app/controllers/fields_controller.rb:56: syntax error, unexpected '}', expecting keyword_end
+Started GET "/fields/show/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:54:54 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:55: warning: key :name is duplicated and overwritten on line 55
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (270.0ms)
+Completed 200 OK in 1980ms (Views: 516.4ms)
+
+
+Started GET "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:55:02 +0900
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (958.7ms)
+Completed 200 OK in 2680ms (Views: 1108.1ms)
+
+
+Started POST "/fields/edit/1/1/BzrH8XUfch9PlXVVgL3r" for 127.0.0.1 at 2018-02-01 05:55:11 +0900
+Processing by FieldsController#update as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"X+saf3rHBR8tPcE/Fxp4sgZuz1Rz1/ND/0Trn1YypyAOFYSQToudACZmeIuiUmKw55B8OaBux95fFbdR2Aal9Q==", "name"=>"null", "opened_at"=>"2018-02-14", "features"=>"0", "types"=>"0", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal"=>"", "cost"=>"", "time"=>"", "commit"=>"Save ", "region"=>"1", "prefecture"=>"1", "field_id"=>"BzrH8XUfch9PlXVVgL3r"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2230ms
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 05:55:13 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8487.5ms)
+Completed 200 OK in 8527ms (Views: 8525.5ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 05:56:42 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:55: warning: key :name is duplicated and overwritten on line 55
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (31.4ms)
+Completed 200 OK in 214ms (Views: 120.7ms | ActiveRecord: 1.3ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 05:56:57 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"4hoUvUvNUguCZTfNqZihD50ZGh9J2bFgZu4j7Y6ZCm3LaQqFMSOF1k6sP5ljOLs5BtPcz1MKOBqTN5jY6k8L1g==", "field"=>{"name"=>"null", "prefecture"=>"33", "opened_at"=>"2017-08-02", "features"=>"1,2", "types"=>"1,2", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal"=>"", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2625ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 05:57:00 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8999.5ms)
+Completed 200 OK in 9063ms (Views: 9060.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/5/33/O6w1O8WKS9PVt266xSir" for 127.0.0.1 at 2018-02-01 05:57:17 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"5", "prefecture"=>"33", "field_id"=>"O6w1O8WKS9PVt266xSir"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (181.8ms)
+Completed 200 OK in 1362ms (Views: 226.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/edit/5/33/O6w1O8WKS9PVt266xSir" for 127.0.0.1 at 2018-02-01 06:00:43 +0900
+/Users/peachkichi/works/saba/app/controllers/fields_controller.rb:55: warning: key :name is duplicated and overwritten on line 55
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:14: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:12: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:10: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:8: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:6: warning: found = in conditional, should be ==
+/Users/peachkichi/works/saba/app/helpers/fields_helper.rb:4: warning: found = in conditional, should be ==
+Processing by FieldsController#edit as HTML
+  Parameters: {"region"=>"5", "prefecture"=>"33", "field_id"=>"O6w1O8WKS9PVt266xSir"}
+  Rendering fields/edit.html.erb within layouts/application
+  Rendered fields/edit.html.erb within layouts/application (274.5ms)
+Completed 200 OK in 1757ms (Views: 349.8ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:01:05 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9059.6ms)
+Completed 200 OK in 9139ms (Views: 9134.7ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 06:01:34 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (16.0ms)
+Completed 200 OK in 111ms (Views: 53.8ms | ActiveRecord: 1.2ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 06:01:48 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"POOBiml0gpDIFxyjWz6xcwa9eIbNfYIwqh86GL9G1zsVkJ+yE5pVTQTeFPeRnqtFnXe+VteuC0pfxoEt25DWgA==", "field"=>{"name"=>"テスト", "prefecture"=>"1", "opened_at"=>"2018-02-06", "features"=>"1,2", "types"=>"1,2", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal"=>"", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2221ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:01:50 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9307.3ms)
+Completed 200 OK in 9370ms (Views: 9367.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/GKMm2Ing4cFC85CO1f9Q" for 127.0.0.1 at 2018-02-01 06:02:28 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"GKMm2Ing4cFC85CO1f9Q"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (268.8ms)
+Completed 200 OK in 1503ms (Views: 329.6ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:02:40 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 06:02:42 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (18.0ms)
+Completed 200 OK in 73ms (Views: 71.2ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 06:02:45 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"1NVC0cAea+YEqWEnZ9zzSBFRUrbwENxxCXwUDzJZUmf9plzpuvC8O8hgaXOtfOl+ipuUZurDVQv8pa86Vo9T3A==", "field"=>{"name"=>"nu", "prefecture"=>"1", "opened_at"=>"", "features"=>"1,2", "types"=>"1,2", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal"=>"", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2235ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:02:47 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8833.2ms)
+Completed 200 OK in 8886ms (Views: 8884.3ms | ActiveRecord: 0.0ms)
+
+
+  Rendered fields/index.html.erb within layouts/application (8897.8ms)
+Completed 200 OK in 8951ms (Views: 8949.7ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 06:03:16 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (18.2ms)
+Completed 200 OK in 83ms (Views: 78.6ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 06:03:28 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"JUrX4Sc5caOJBd2gtawmQII9XzKPPfmicKousb/ZImIMOcnZXdemfkXM1fR/DDx2GfeZ4pXucNiFc5WE2w8j2Q==", "field"=>{"name"=>"あれれr", "prefecture"=>"11", "opened_at"=>"", "features"=>"1,2", "types"=>"1,2", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal"=>"", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2326ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:03:30 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9208.8ms)
+Completed 200 OK in 9270ms (Views: 9268.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 06:04:06 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (18.6ms)
+Completed 200 OK in 76ms (Views: 73.4ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 06:04:16 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"FdD0ELvMt64jD9pQN1TDEP25Xv9CNvtCbQJoG99+7pg8o+oowSJgc+/G0gT99NkmZnOYL1jlcjiY29Muu6jvIw==", "field"=>{"name"=>"ムムム", "prefecture"=>"17", "opened_at"=>"", "features"=>"1,2", "types"=>"1,2", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal"=>"", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2268ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:04:18 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9922.9ms)
+Completed 200 OK in 10010ms (Views: 10007.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 06:05:04 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (16.8ms)
+Completed 200 OK in 69ms (Views: 66.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/new" for 127.0.0.1 at 2018-02-01 06:34:12 +0900
+Processing by FieldsController#new as HTML
+  Rendering fields/new.html.erb within layouts/application
+  Rendered fields/new.html.erb within layouts/application (86.6ms)
+Completed 200 OK in 229ms (Views: 223.1ms | ActiveRecord: 0.0ms)
+
+
+Started POST "/fields" for 127.0.0.1 at 2018-02-01 06:35:43 +0900
+Processing by FieldsController#create as HTML
+  Parameters: {"utf8"=>"✓", "authenticity_token"=>"zqE8ScV5bhLB5/sVSrwOvrROGVl1bQ23CK8y9yEpezR5vd/NdGoYE3IRgSeEEx3MTWwdCg3kAzTnMnYhrIK/lA==", "field"=>{"name"=>"null", "prefecture"=>"1", "opened_at"=>"", "features"=>"1,2", "types"=>"1,2", "image1"=>"null", "image2"=>"null", "image3"=>"null", "image4"=>"null", "image5"=>"null", "googlemap"=>"null", "nearest"=>"null", "postalcode"=>"null", "shikuchoson"=>"null", "tel"=>"null", "charter"=>"null", "site_url"=>"null", "teireikai"=>"null", "all_address"=>"null", "facebook"=>"null", "instagram"=>"null", "twitter"=>"null", "youtube"=>"null", "cal"=>"", "cost"=>"null", "time"=>"null"}, "commit"=>"Create Field"}
+Redirected to http://localhost:3000/fields
+Completed 302 Found in 2543ms (ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:35:45 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9214.1ms)
+Completed 200 OK in 9278ms (Views: 9275.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/Sw6qA6cHJeKZVhxUkgEi" for 127.0.0.1 at 2018-02-01 06:36:10 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"Sw6qA6cHJeKZVhxUkgEi"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (226.4ms)
+Completed 200 OK in 1464ms (Views: 292.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/Sw6qA6cHJeKZVhxUkgEi" for 127.0.0.1 at 2018-02-01 06:36:50 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"Sw6qA6cHJeKZVhxUkgEi"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (328.2ms)
+Completed 200 OK in 1913ms (Views: 396.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:36:55 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9781.7ms)
+Completed 200 OK in 9845ms (Views: 9843.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:38:12 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9522.1ms)
+Completed 200 OK in 9612ms (Views: 9602.8ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:40:50 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (1591.7ms)
+Completed 500 Internal Server Error in 1598ms (ActiveRecord: 0.0ms)
+
+
+  
+ActionView::Template::Error (undefined local variable or method `num' for #<#<Class:0x007fa7de425260>:0x007fa7de429298>
+Did you mean?  sum):
+    15:         <% fields_col = firestore.col "fields/#{i}/#{prefecuture}"%>
+    16:           <!-- =>"fields/1/1" -->
+    17:           num = i
+    18:         <strong><%= set_region(num) %></strong>
+    19:         <% fields_col.get do |f|%>
+    20:           <% field_path= "#{f[:region]}/#{f[:prefecture]}/#{f[:field_id]}"%>
+    21:             <!-- =>"fields/1/1/自動ID" -->
+  
+app/views/fields/index.html.erb:18:in `block (2 levels) in _app_views_fields_index_html_erb___121660046539518219_70179482587280'
+app/views/fields/index.html.erb:13:in `each'
+app/views/fields/index.html.erb:13:in `block in _app_views_fields_index_html_erb___121660046539518219_70179482587280'
+app/views/fields/index.html.erb:9:in `_app_views_fields_index_html_erb___121660046539518219_70179482587280'
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:41:12 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (1725.7ms)
+Completed 500 Internal Server Error in 1731ms (ActiveRecord: 0.0ms)
+
+
+  
+ActionView::Template::Error (undefined local variable or method `region_i' for #<#<Class:0x007fa7de425260>:0x007fa7e0d8a9e8>):
+    15:         <% fields_col = firestore.col "fields/#{i}/#{prefecuture}"%>
+    16:           <!-- =>"fields/1/1" -->
+    17:           region_i = i
+    18:         <strong><%= set_region(region_i) %></strong>
+    19:         <% fields_col.get do |f|%>
+    20:           <% field_path= "#{f[:region]}/#{f[:prefecture]}/#{f[:field_id]}"%>
+    21:             <!-- =>"fields/1/1/自動ID" -->
+  
+app/views/fields/index.html.erb:18:in `block (2 levels) in _app_views_fields_index_html_erb___121660046539518219_70179504283100'
+app/views/fields/index.html.erb:13:in `each'
+app/views/fields/index.html.erb:13:in `block in _app_views_fields_index_html_erb___121660046539518219_70179504283100'
+app/views/fields/index.html.erb:9:in `_app_views_fields_index_html_erb___121660046539518219_70179504283100'
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:41:46 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9311.3ms)
+Completed 200 OK in 9375ms (Views: 9372.7ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:43:11 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9152.5ms)
+Completed 200 OK in 9220ms (Views: 9217.2ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:43:29 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (8938.5ms)
+Completed 200 OK in 8980ms (Views: 8978.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/2/11/m5ubvKzwCxx9Ay0s9d4o" for 127.0.0.1 at 2018-02-01 06:43:39 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"2", "prefecture"=>"11", "field_id"=>"m5ubvKzwCxx9Ay0s9d4o"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (196.8ms)
+Completed 200 OK in 1412ms (Views: 246.4ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/3/17/I54EoglVcZxL7n8aXkEx" for 127.0.0.1 at 2018-02-01 06:43:53 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"3", "prefecture"=>"17", "field_id"=>"I54EoglVcZxL7n8aXkEx"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (284.2ms)
+Completed 200 OK in 1609ms (Views: 331.0ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/2/11/m5ubvKzwCxx9Ay0s9d4o" for 127.0.0.1 at 2018-02-01 06:44:04 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"2", "prefecture"=>"11", "field_id"=>"m5ubvKzwCxx9Ay0s9d4o"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (213.2ms)
+Completed 200 OK in 1481ms (Views: 273.1ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields/show/1/1/Sw6qA6cHJeKZVhxUkgEi" for 127.0.0.1 at 2018-02-01 06:45:16 +0900
+Processing by FieldsController#show as HTML
+  Parameters: {"region"=>"1", "prefecture"=>"1", "field_id"=>"Sw6qA6cHJeKZVhxUkgEi"}
+  Rendering fields/show.html.erb within layouts/application
+  Rendered fields/show.html.erb within layouts/application (292.8ms)
+Completed 200 OK in 1642ms (Views: 353.3ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:48:17 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9509.2ms)
+Completed 200 OK in 9590ms (Views: 9584.4ms | ActiveRecord: 0.0ms)
+
+
+Started GET "/fields" for 127.0.0.1 at 2018-02-01 06:49:10 +0900
+Processing by FieldsController#index as HTML
+  Rendering fields/index.html.erb within layouts/application
+  Rendered fields/index.html.erb within layouts/application (9166.5ms)
+Completed 200 OK in 9226ms (Views: 9224.2ms | ActiveRecord: 0.0ms)
+
+
+^C- Gracefully stopping, waiting for requests to finish
+=== puma shutdown: 2018-02-01 06:53:06 +0900 ===
+- Goodbye!
+Exiting
+peachkichinoMacBook-Pro:saba peachkichi$ irb
+irb(main):001:0> {1: "北海道"}
+SyntaxError: (irb):1: syntax error, unexpected ':', expecting =>
+{1: "北海道"}
+   ^
+(irb):1: syntax error, unexpected '}', expecting end-of-input
+{1: "北海道"}
+                ^
+	from /Users/peachkichi/.rbenv/versions/2.4.1/bin/irb:11:in `<main>'
+irb(main):002:0> {1: "北海道"}
+SyntaxError: (irb):2: syntax error, unexpected ':', expecting =>
+{1: "北海道"}
+   ^
+(irb):2: syntax error, unexpected '}', expecting end-of-input
+{1: "北海道"}
+                ^
+	from /Users/peachkichi/.rbenv/versions/2.4.1/bin/irb:11:in `<main>'
+irb(main):003:0> ({1: "北海道"})
+SyntaxError: (irb):3: syntax error, unexpected ':', expecting =>
+({1: "北海道"})
+    ^
+(irb):3: syntax error, unexpected '}', expecting ')'
+({1: "北海道"})
+                 ^
+	from /Users/peachkichi/.rbenv/versions/2.4.1/bin/irb:11:in `<main>'
+irb(main):004:0> ({1: "北海道"})
+SyntaxError: (irb):4: syntax error, unexpected ':', expecting =>
+({1: "北海道"})
+    ^
+(irb):4: syntax error, unexpected '}', expecting ')'
+({1: "北海道"})
+                 ^
+	from /Users/peachkichi/.rbenv/versions/2.4.1/bin/irb:11:in `<main>'
+irb(main):005:0> ({1 => "北海道"})
